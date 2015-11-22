@@ -112,7 +112,6 @@ class ImmobilienScoutProvider(BaseListingProvider):
             # fetching details, since all subsequent results are too old and we'd
             # be wasting API calls.
             if self.published_after and result.date_published < self.published_after:
-                print('older than reached')
                 break
 
             commute_info = geoutils.commute_information(self.near, result.geolocation or result.address)
