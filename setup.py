@@ -8,5 +8,5 @@ setup(
     author_email='contact@nicolasbouliane.com',
     url='http://github.com/nicbou/apartment-hunt',
     install_requires=['requests', 'requests_oauthlib', 'python-dateutil'],
-    packages=['apartment_hunt'],
+    packages=['apartment_hunt', 'apartment_hunt.providers'],
 )
