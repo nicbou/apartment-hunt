@@ -20,7 +20,7 @@ class BaseListingProvider(object):
         self.max_commute_duration = kwargs.get('max_commute_duration', 999999)
         self.min_size = kwargs.get('min_size', 0)
         self.near = kwargs.get('near', {'lat': 0, 'lng': 0})
-        self.posted_after = kwargs.get('posted_after', a_year_ago)
+        self.posted_after = kwargs.get('posted_after') or a_year_ago
         self.top_floor_only = kwargs.get('top_floor_only', False)
 
     def get_results(self):
@@ -60,10 +60,12 @@ class BaseListing(object):
     url = None
 
     def __repr__(self):
-        return "{rent:.0f}€, {room_count:.2g}br, {size}m², {commute_duration} minute commute. {url}".format(
-            rent=self.base_rent,
-            room_count=self.room_count,
-            size=self.size,
+        return "{rent:.0f}€, {room_count:.2g}br, {size}m², floor {floor}/{floor_count}, {commute_duration} minute commute. {url}".format(
             commute_duration=self.commute_duration or '?',
+            floor=self.floor,
+            floor_count=self.floor_count or '?',
+            rent=self.base_rent,
+            room_count=self.room_count or '?',
+            size=self.size,
             url=self.url or '',
         )

@@ -62,7 +62,7 @@ class ImmobilienScoutProvider(BaseListingProvider):
     search_url = 'http://www.immobilienscout24.de/Suche/controller/asyncResults.go?searchUrl=/Suche/S-2/P-{page}/Wohnung-Miete/{city}/{city}/-/{min_rooms}-{max_rooms}/{min_size}-/EURO--{max_rent}/-/128,117,127,118,6,7,40,8,3,113'
 
     def __init__(self, *args, **kwargs):
-        self.city = kwargs.pop('city')
+        self.immobilienscout_city = kwargs.pop('immobilienscout_city')
         super(ImmobilienScoutProvider, self).__init__(*args, **kwargs)
 
     def _get_results_page(self, page):
@@ -72,7 +72,7 @@ class ImmobilienScoutProvider(BaseListingProvider):
             min_size=str(self.min_size).replace('.', ','),
             min_rooms=str(self.min_room_count).replace('.', ','),
             max_rooms=str(self.max_room_count).replace('.', ','),
-            city=self.city,
+            city=self.immobilienscout_city,
         )
         response = requests.get(url=url, params={})
         response_json = json.loads(response.text)
@@ -112,7 +112,7 @@ class ImmobilienScoutProvider(BaseListingProvider):
     def get_results(self):
         results = []
         page = 1
-        for page in range(1, 2):
+        for page in range(1, 10):
             results += self._get_results_page(page)
 
         results = self.prefiltered_results(results)
