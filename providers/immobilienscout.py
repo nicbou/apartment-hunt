@@ -99,15 +99,29 @@ class ImmobilienScoutProvider(BaseListingProvider):
 
         return filter(is_relevant, results)
 
-    def extend_results(self, results):
+    def extended_results(self, results):
         """
-        Gets additional information about a listing
+        Gets additional information about a listing.
         """
+        valid_results = []
+
         for result in results:
             result.fetch_details()
+
+            # Once we hit a result that's older than self.published_after, we stop
+            # fetching details, since all subsequent results are too old and we'd
+            # be wasting API calls.
+            if self.published_after and result.date_published < self.published_after:
+                print('older than reached')
+                break
+
             commute_info = geoutils.commute_information(self.near, result.geolocation or result.address)
-            result.commute_summary = commute_info.get('summary')
-            result.commute_duration = commute_info.get('duration') / 60 if commute_info.get('duration') else None
+            if commute_info:
+                result.commute_summary = commute_info.get('summary')
+                result.commute_duration = commute_info.get('duration') / 60 if commute_info.get('duration') else None
+            valid_results.append(result)
+
+        return valid_results
 
     def get_results(self):
         results = []
@@ -116,8 +130,7 @@ class ImmobilienScoutProvider(BaseListingProvider):
             results += self._get_results_page(page)
 
         results = self.prefiltered_results(results)
-
-        self.extend_results(results)
+        results = self.extended_results(results)
 
         return self.filtered_results(results)
 

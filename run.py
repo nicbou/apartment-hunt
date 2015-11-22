@@ -20,7 +20,7 @@ params = {
     'max_commute_duration': 30,  # 30 minutes from work using public transit
     'max_distance': 12000,  # Less than 12km from work. Saves some Google Directions API calls
     'max_rent': 900,  # 900 euros or less
-    'posted_after': db.get('last_fetched'),
+    'published_after': db.get('last_fetched'),
     'top_floor_only': True,
 }
 
@@ -33,7 +33,6 @@ for result in results:
 
 # Save the latest element
 db['last_fetched'] = datetime.datetime.now(tzlocal())
-db['immobilienscout_posted_after_id'] = results[0].id
 
 db.sync()
 db.close()

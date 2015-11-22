@@ -20,7 +20,7 @@ class BaseListingProvider(object):
         self.max_commute_duration = kwargs.get('max_commute_duration', 999999)
         self.min_size = kwargs.get('min_size', 0)
         self.near = kwargs.get('near', {'lat': 0, 'lng': 0})
-        self.posted_after = kwargs.get('posted_after') or a_year_ago
+        self.published_after = kwargs.get('published_after') or a_year_ago
         self.top_floor_only = kwargs.get('top_floor_only', False)
 
     def get_results(self):
@@ -39,7 +39,7 @@ class BaseListingProvider(object):
                 )
                 and (result.commute_duration <= self.max_commute_duration or not result.commute_duration or not self.max_commute_duration)
                 and result.size >= self.min_size
-                and result.date_published >= self.posted_after
+                and result.date_published >= self.published_after
                 and (result.floor == result.floor_count or not self.top_floor_only or not result.floor_count)
             )
 
