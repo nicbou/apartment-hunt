@@ -1,29 +1,35 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
 
-from requests_oauthlib import OAuth1
+from apartment_hunt import geoutils
+from apartment_hunt.providers.base import BaseListingProvider, BaseListing
 from dateutil import parser
-from providers.base import BaseListingProvider, BaseListing
-import requests
+from requests_oauthlib import OAuth1
 import json
 import re
-import geoutils
-import config
+import requests
 
 
 class ImmobilienScoutListing(BaseListing):
 
     _non_decimal_chars = re.compile(r'[^(\d\.,).]+')
 
-    def __init__(self, json_data):
+    def __init__(self, json_data, **kwargs):
         """
         Create the listing with data from a call to the unofficial search API
         """
         self.id = json_data['id']
         self.room_count = float(self._get_attribute(json_data, 'Zimmer').replace(',', '.'))  # 1,5 is a possible value
         self.address = json_data['address']
-        self.pictures = json_data.get('pictureUrls')
         self.url = 'http://www.immobilienscout24.de/expose/{id}'.format(id=self.id)
+
+        # Get the full size pictures' URLs without hitting an API call
+        self.pictures = []
+        for picture in json_data.get('pictureUrls', []):
+            truncate_at = picture.find('/ORIG/') + len('/ORIG/')
+            if truncate_at > -1:
+                picture = picture[0:truncate_at]
+            self.pictures.append(picture)
 
         # Formatted as 1.084,98 €
         self.base_rent = float(self._non_decimal_chars.sub('', self._get_attribute(json_data, 'Kaltmiete')).replace('.', '').replace(',', '.'))
@@ -38,11 +44,14 @@ class ImmobilienScoutListing(BaseListing):
                 'lng': json_data.get('longitude'),
             }
 
-    def fetch_details(self):
+    def fetch_details(self, **kwargs):
         """
         Extend the listing with data from the expose API
         """
-        api = ImmobilienScoutExposeApi()
+        client_key = kwargs.pop('immobilienscout_api_key')
+        client_secret = kwargs.pop('immobilienscout_api_secret')
+
+        api = ImmobilienScoutExposeApi(client_key=client_key, client_secret=client_secret)
         json_results = api.get_listing_details(self.id)
         self.floor = json_results['realEstate'].get('floor', None)
         self.floor_count = json_results['realEstate'].get('numberOfFloors', None)
@@ -62,6 +71,9 @@ class ImmobilienScoutProvider(BaseListingProvider):
     search_url = 'http://www.immobilienscout24.de/Suche/controller/asyncResults.go?searchUrl=/Suche/S-2/P-{page}/Wohnung-Miete/{city}/{city}/-/{min_rooms}-{max_rooms}/{min_size}-/EURO--{max_rent}/-/128,117,127,118,6,7,40,8,3,113'
 
     def __init__(self, *args, **kwargs):
+        self.client_key = kwargs.pop('immobilienscout_api_key')
+        self.client_secret = kwargs.pop('immobilienscout_api_secret')
+        self.google_api_key = kwargs.pop('google_api_key')
         self.immobilienscout_city = kwargs.pop('immobilienscout_city')
         super(ImmobilienScoutProvider, self).__init__(*args, **kwargs)
 
@@ -106,7 +118,7 @@ class ImmobilienScoutProvider(BaseListingProvider):
         valid_results = []
 
         for result in results:
-            result.fetch_details()
+            result.fetch_details(immobilienscout_api_key=self.client_key, immobilienscout_api_secret=self.client_secret)
 
             # Once we hit a result that's older than self.published_after, we stop
             # fetching details, since all subsequent results are too old and we'd
@@ -114,7 +126,7 @@ class ImmobilienScoutProvider(BaseListingProvider):
             if self.published_after and result.date_published < self.published_after:
                 break
 
-            commute_info = geoutils.commute_information(self.near, result.geolocation or result.address)
+            commute_info = geoutils.commute_information(self.near, result.geolocation or result.address, google_api_key=self.google_api_key)
             if commute_info:
                 result.commute_summary = commute_info.get('summary')
                 result.commute_duration = commute_info.get('duration') / 60 if commute_info.get('duration') else None
@@ -135,13 +147,12 @@ class ImmobilienScoutProvider(BaseListingProvider):
 
 
 class ImmobilienScoutExposeApi(object):
-    client_key = config.IMMOBILIENSCOUT_KEY
-    client_secret = config.IMMOBILIENSCOUT_SECRET
-    resource_owner_key = None
-    resource_owner_secret = None
+    def __init__(self, **kwargs):
+        self.client_key = kwargs.pop('client_key')
+        self.client_secret = kwargs.pop('client_secret')
 
     def oauth_request(self, url):
-        oauth = OAuth1(self.client_key, client_secret=self.client_secret,)
+        oauth = OAuth1(self.client_key, client_secret=self.client_secret)
         return requests.get(url, auth=oauth, headers={'Accept': 'application/json'})
 
     def get_listing_details(self, id):

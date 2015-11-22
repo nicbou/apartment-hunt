@@ -1,9 +1,9 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
 
+from apartment_hunt import geoutils
 from dateutil.tz import tzlocal
 import datetime
-import geoutils
 
 
 class BaseListingProvider(object):
@@ -60,12 +60,11 @@ class BaseListing(object):
     url = None
 
     def __repr__(self):
-        return "{rent:.0f}€, {room_count:.2g}br, {size}m², floor {floor}/{floor_count}, {commute_duration} minute commute. {url}".format(
+        return "{rent:.0f}€, {room_count:.2g}br, {size}m², floor {floor}/{floor_count}, {commute_duration} minute commute.".format(
             commute_duration=self.commute_duration or '?',
             floor=self.floor or '?',
             floor_count=self.floor_count or '?',
             rent=self.total_rent,
             room_count=self.room_count or '?',
             size=self.size,
-            url=self.url or '',
         )

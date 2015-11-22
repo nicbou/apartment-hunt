@@ -4,7 +4,6 @@ import requests
 import json
 import math
 import datetime
-import config
 
 
 def direct_distance(coordinate1, coordinate2):
@@ -27,12 +26,15 @@ def direct_distance(coordinate1, coordinate2):
     return arc * 6.373
 
 
-def commute_information(origin, destination):
+def commute_information(origin, destination, google_api_key=None):
     """
     Use the Google Directions API to find basic commute information.
     Calculates routes at 10AM in the current timezone
     """
     api_url = 'https://maps.googleapis.com/maps/api/directions/json?'
+
+    if not google_api_key:
+        raise Exception('No google_api_key provided')
 
     if isinstance(origin, dict):
         origin = '{0},{1}'.format(origin['lat'], origin['lng'])
@@ -45,7 +47,7 @@ def commute_information(origin, destination):
         'mode': 'transit',
         'departure_time': (datetime.datetime.now(tzlocal()) + relativedelta(hour=10)).microsecond,  # At 10AM
         'transit_routing_preference': 'fewer_transfers',
-        'key': config.GOOGLE_API_KEY,
+        'key': google_api_key,
     }
     response = requests.get(url=api_url, params=params)
     response_json = json.loads(response.text)
