@@ -62,9 +62,9 @@ class BaseListing(object):
     def __repr__(self):
         return "{rent:.0f}€, {room_count:.2g}br, {size}m², floor {floor}/{floor_count}, {commute_duration} minute commute. {url}".format(
             commute_duration=self.commute_duration or '?',
-            floor=self.floor,
+            floor=self.floor or '?',
             floor_count=self.floor_count or '?',
-            rent=self.base_rent,
+            rent=self.total_rent,
             room_count=self.room_count or '?',
             size=self.size,
             url=self.url or '',
