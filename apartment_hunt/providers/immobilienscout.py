@@ -55,8 +55,9 @@ class ImmobilienScoutListing(BaseListing):
         json_results = api.get_listing_details(self.id)
         self.floor = json_results['realEstate'].get('floor', None)
         self.floor_count = json_results['realEstate'].get('numberOfFloors', None)
+
         self.base_rent = json_results['realEstate']['baseRent']
-        self.total_rent = json_results['realEstate'].get('totalRent', None)
+        self.total_rent = json_results['realEstate'].get('totalRent', self.base_rent)
 
         self.available_from = json_results['realEstate'].get('freeFrom')
 
