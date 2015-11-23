@@ -18,6 +18,8 @@ class ImmobilienScoutListing(BaseListing):
         """
         Create the listing with data from a call to the unofficial search API
         """
+        super(ImmobilienScoutListing, self).__init__(**kwargs)
+
         self.id = json_data['id']
         self.room_count = float(self._get_attribute(json_data, 'Zimmer').replace(',', '.'))  # 1,5 is a possible value
         self.address = json_data['address']

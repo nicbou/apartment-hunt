@@ -39,7 +39,7 @@ class BaseListingProvider(object):
                 )
                 and (result.commute_duration <= self.max_commute_duration or not result.commute_duration or not self.max_commute_duration)
                 and result.size >= self.min_size
-                and result.date_published >= self.published_after
+                and result.date_published > self.published_after
                 and (result.floor == result.floor_count or not self.top_floor_only or not result.floor_count)
             )
 
@@ -47,17 +47,21 @@ class BaseListingProvider(object):
 
 
 class BaseListing(object):
-    address = ''
-    available_from = None
-    floor = None
-    floor_count = None
-    geolocation = None
-    id = None
-    pictures = []
-    rent = 0
-    room_count = 0
-    commute_duration = None
-    url = None
+
+    def __init__(self, **kwargs):
+        self.address = kwargs.get('address', ''),
+        self.available_from = kwargs.get('available_from', None),
+        self.date_published = kwargs.get('date_published', None),
+        self.floor = kwargs.get('floor', None),
+        self.floor_count = kwargs.get('floor_count', None),
+        self.geolocation = kwargs.get('geolocation', None),
+        self.id = kwargs.get('id', None),
+        self.pictures = kwargs.get('pictures', []),
+        self.base_rent = kwargs.get('base_rent', 0),
+        self.total_rent = kwargs.get('total_rent', 0),
+        self.room_count = kwargs.get('room_count', 0),
+        self.commute_duration = kwargs.get('commute_duration', None),
+        self.url = kwargs.get('url', None),
 
     def __repr__(self):
         return "{rent:.0f}€, {room_count:.2g}br, {size}m², floor {floor}/{floor_count}, {commute_duration} minute commute.".format(
