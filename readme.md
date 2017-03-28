@@ -1,4 +1,4 @@
-#Apartment hunt tool
+# Apartment hunt tool
 
 This module will fetch apartment listings from *providers* such as ImmobilienScout24 based on predefined criteria. Here's a simple code example:
 
@@ -6,25 +6,25 @@ This module will fetch apartment listings from *providers* such as ImmobilienSco
 results = ImmobilienScoutProvider(near=near, city='Berlin', max_distance=8000, max_commute_duration=30, max_rent=900, top_floor_only=True).get_results()
 ```
 
-##But why?
+## But why?
 
 Most apartment listing websites make it really hard to see what really matters when apartment hunting. For instance, there's no way to say "I want an apartment that's less than 30 minutes from work", or "I only want to see apartments on the top floor".
 
 Also, it can be quite hard to be the first to bid on an apartment in crazy markets like Berlin. It would be trivial to send matching listings directly to your phone with [Pushover](https://pushover.net).
 
-##How it works
+## How it works
 
-###Setting up the project
+### Setting up the project
 
 This repository holds a Python module that can be installed with pip (`pip install git+https://github.com/nicbou/apartment-hunt.git@master`).
 
-###ListingProviders
+### ListingProviders
 
 ListingProviders extend `BaseListingProvider` and return instances of `BaseListing`. The provider's role is to take a standard list of filters such as `max_rent`, `max_commute_duration` etc. and only return matching listings from an arbitrary source.
 
 Take a look at `BaseListingProvider` under `apartment_hunt/providers/base.py`, then `apartment_hunt/providers/immobilienscout.py` to get an idea of how providers work.
 
-###Utility classes
+### Utility classes
 
 The `geoutils` module provides some useful functions to calculate the distance between geographical coordinates.
 
@@ -38,7 +38,7 @@ print(direct_distance(coordinate1, coordinate2))  # Distance in meters
 print(commute_information(coordinate1, coordinate2, google_api_key=...))  # {'commute_summary':['U6', 'S5', 'M10'], 'commute_duration': 30}
 ```
 
-###Getting results
+### Getting results
 
 Here is how to use the ImmobilienScoutProvider. Aside from the `immobilienscout_*` parameters, all other parameters are meant to be supported by all ListingProviders.
 
